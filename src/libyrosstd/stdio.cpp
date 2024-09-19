@@ -1,9 +1,9 @@
 // https://github.com/FlowerBlackG/YurongOS/blob/i386-archive-v0.0.1/src/lib/stdio.cpp
 /*
- * 标准输入输出实现。
- * 创建于 2022年7月13日。
+ * 鏍囧噯杈撳叆杈撳嚭瀹炵幇銆�
+ * 鍒涘缓浜� 2022骞�7鏈�13鏃ャ€�
  * 
- * 参考：
+ * 鍙傝€冿細
  *   https://pubs.opengroup.org/onlinepubs/9699919799/
  *   https://cplusplus.com/reference/cstdio/sprintf/
  *   https://cplusplus.com/reference/cstdio/vsprintf/
@@ -25,7 +25,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
     
     // %[flags][width][.precision][length]specifier
 
-    // flag 定义。
+    // flag 瀹氫箟銆�
 #define __VPF_FLAG_NULL 0
 #define __VPF_FLAG_ZERO_BIT 1
 #define __VPF_FLAG_SPACE_BIT 2
@@ -33,7 +33,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 #define __VPF_FLAG_MINUS_BIT 8
 #define __VPF_FLAG_NUMBER_SIGN_BIT 16
 
-    // 长度限定符定义。
+    // 闀垮害闄愬畾绗﹀畾涔夈€�
 #define __VPF_LENGTH_NULL 0
 #define __VPF_LENGTH_CHAR 1
 #define __VPF_LENGTH_SHORT 2
@@ -44,10 +44,10 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 #define __VPF_LENGTH_PTRDIFF_T 7
 #define __VPF_LENGTH_LONG_DOUBLE 8
 
-    // 精度。
+    // 绮惧害銆�
 #define __VPF_PRECISION_NULL -1
 
-    // 宽度。
+    // 瀹藉害銆�
 #define __VPF_WIDTH_NULL -1
 
 
@@ -62,8 +62,8 @@ int vsprintf(char* buffer, const char* format, va_list args) {
     int width;
     int precision;
 
-    // 工具闭包函数。
-    // 拼接一个16进制数。自动补充对齐等。
+    // 宸ュ叿闂寘鍑芥暟銆�
+    // 鎷兼帴涓€涓�16杩涘埗鏁般€傝嚜鍔ㄨˉ鍏呭榻愮瓑銆�
     auto catHex = [&] (uint64_t hexVal, size_t nbytes, bool upper) {
 
         char tmpStr[32];
@@ -120,7 +120,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 
     while (*pFmt != NULL) {
 
-        /* ------------ 百分号 %. ------------ */
+        /* ------------ 鐧惧垎鍙� %. ------------ */
 
         if (*pFmt == '%') {
             pPrecisionSign = pFmt++;
@@ -189,13 +189,13 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     precision += *(pFmt++) - '0';
                 }
             } else {
-                // 格式解析异常。
+                // 鏍煎紡瑙ｆ瀽寮傚父銆�
                 return -1;
             }
         }
 
 
-        /* ------------ 长度限定符。 ------------ */
+        /* ------------ 闀垮害闄愬畾绗︺€� ------------ */
 
         if (*pFmt == 'h' && *(pFmt + 1) == 'h') {
             pFmt += 2;
@@ -224,7 +224,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
         }
 
 
-        /* ------------ 类型限定符。 ------------ */
+        /* ------------ 绫诲瀷闄愬畾绗︺€� ------------ */
 
         char specifier = *(pFmt++);
         
@@ -233,7 +233,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 *(pBuf++) = '%';
                 continue;
 
-            // 整数系列。
+            // 鏁存暟绯诲垪銆�
 
             case 'd':
             case 'i': 
@@ -242,7 +242,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 char tmp[64];
                 char* pTmp = tmp;
 
-                // todo: 无法处理 long long 等 64 位数据类型。
+                // todo: 鏃犳硶澶勭悊 long long 绛� 64 浣嶆暟鎹被鍨嬨€�
                 uint8_t base = (specifier == 'o' ? 8 : 10);
                 uint32_t mask;
                 uint32_t val;
@@ -300,8 +300,23 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     mask = (1UL << (sizeof(size_t) * 8)) - 1;
                     val = (uint32_t)originalVal & mask;
                 } else {
-                    int originalVal = va_arg(args, int);
-                    if ((specifier == 'd' || specifier == 'i') && originalVal < 0) {
+                    mask = (1ULL << (sizeof(int) * 8)) - 1;
+                    val = va_arg(args, int) & mask;
+                }
+
+                char sign = NULL;
+
+                // 鍒ゆ柇鏄惁涓鸿礋鏁般€�
+                if (specifier == 'd' || specifier == 'i') {
+                    if (
+                        (lengthSpecifier == __VPF_LENGTH_CHAR && (char) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_SHORT && (short) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_LONG && (long) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_LONG_LONG && (long long) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_INT_MAX && (intmax_t) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_SIZE_T && (size_t) val < 0)
+                        || (lengthSpecifier == __VPF_LENGTH_NULL && (int) val < 0)
+                    ) {
                         sign = '-';
                         val = (uint32_t)(-originalVal);
                     } else {
@@ -310,7 +325,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     }
                 }
                 
-                // 非负情况，决定是否要强制设置符号。
+                // 闈炶礋鎯呭喌锛屽喅瀹氭槸鍚﹁寮哄埗璁剧疆绗﹀彿銆�
                 if (sign == NULL) {
                     if (flag & __VPF_FLAG_SPACE_BIT) {
                         sign = ' ';
@@ -319,7 +334,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     }
                 }
 
-                // 提取各位数字。
+                // 鎻愬彇鍚勪綅鏁板瓧銆�
                 if (val == 0) {
                     *(pTmp++) = '0';
                 } else while (val > 0) {
@@ -327,15 +342,15 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     val /= base;
                 }
 
-                // 8进制补充前缀0。
+                // 8杩涘埗琛ュ厖鍓嶇紑0銆�
                 if ((flag & __VPF_FLAG_NUMBER_SIGN_BIT) && specifier == 'o') {
                     *(pTmp++) = '0';
                 }
 
-                // 数字串长度。
+                // 鏁板瓧涓查暱搴︺€�
                 int32_t len = pTmp - tmp;
 
-                // 填充串长度。符号算在填充串内。
+                // 濉厖涓查暱搴︺€傜鍙风畻鍦ㄥ～鍏呬覆鍐呫€�
                 int32_t paddingLen = (precision > width ? precision : width);
                 paddingLen = (paddingLen > 0 ? paddingLen : 0);
 
@@ -343,7 +358,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 
                 paddingLen = (paddingLen > 0 ? paddingLen : 0);
 
-                // 输出前缀填充。
+                // 杈撳嚭鍓嶇紑濉厖銆�
                 if (paddingLen && (flag & __VPF_FLAG_ZERO_BIT || !(flag & __VPF_FLAG_MINUS_BIT)))
                 {
 
@@ -366,12 +381,12 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                     *(pBuf++) = sign;
                 }
 
-                // 输出数字。
+                // 杈撳嚭鏁板瓧銆�
                 while (pTmp > tmp) {
                     *(pBuf++) = *(--pTmp);
                 }
 
-                // 后缀填充空格。
+                // 鍚庣紑濉厖绌烘牸銆�
                 if (paddingLen && !(flag & __VPF_FLAG_ZERO_BIT) && flag & __VPF_FLAG_MINUS_BIT)
                 {
                     int32_t len = paddingLen - !!(sign != NULL);
@@ -382,7 +397,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 break;
             }
         
-            // 16 进制无符号整数。
+            // 16 杩涘埗鏃犵鍙锋暣鏁般€�
             case 'x':
             case 'X': {
                 if (lengthSpecifier == __VPF_LENGTH_CHAR) {
@@ -405,12 +420,12 @@ int vsprintf(char* buffer, const char* format, va_list args) {
             }
 
 
-            // 浮点系列。
+            // 娴偣绯诲垪銆�
             
-            // 浮点系列未实现。 todo.
+            // 娴偣绯诲垪鏈疄鐜般€� todo.
 
-            // char。
-            // lc 形式未实现。todo.
+            // char銆�
+            // lc 褰㈠紡鏈疄鐜般€倀odo.
             case 'c': {
                 int ch = va_arg(args, int);
 
@@ -429,7 +444,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 break;
             }
 
-            // 字符串。
+            // 瀛楃涓层€�
             case 's': {
                 char* spStr = va_arg(args, char*);
                 int32_t sLen = strlen(spStr);
@@ -464,7 +479,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 break;
             }
 
-            // 指针。
+            // 鎸囬拡銆�
             case 'p': {
                 void* pointer = va_arg(args, void*);
                 uint64_t ui64pointer = (uint64_t) pointer;
@@ -472,12 +487,12 @@ int vsprintf(char* buffer, const char* format, va_list args) {
                 break;
             } 
 
-            // 空。
+            // 绌恒€�
             case 'n': //todo
                 break;
 
             default:
-                // 格式解析异常。
+                // 鏍煎紡瑙ｆ瀽寮傚父銆�
                 return -1;
 
         } // switch (specifier)
@@ -488,7 +503,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
     *pBuf = '\0';
     return pBuf - buffer;
 
-    // 取消 flag 定义，防止干扰后续操作。
+    // 鍙栨秷 flag 瀹氫箟锛岄槻姝㈠共鎵板悗缁搷浣溿€�
 #undef __VPF_FLAG_NULL
 #undef __VPF_FLAG_ZERO_BIT
 #undef __VPF_FLAG_SPACE_BIT
@@ -496,7 +511,7 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 #undef __VPF_FLAG_MINUS_BIT
 #undef __VPF_FLAG_NUMBER_SIGN_BIT
 
-    // 取消长度限定符定义。
+    // 鍙栨秷闀垮害闄愬畾绗﹀畾涔夈€�
 #undef __VPF_LENGTH_NULL
 #undef __VPF_LENGTH_CHAR
 #undef __VPF_LENGTH_SHORT
@@ -507,10 +522,10 @@ int vsprintf(char* buffer, const char* format, va_list args) {
 #undef __VPF_LENGTH_PTRDIFF_T
 #undef __VPF_LENGTH_LONG_DOUBLE
 
-    // 取消精度定义。
+    // 鍙栨秷绮惧害瀹氫箟銆�
 #undef __VPF_PRECISION_NULL
 
-    // 取消宽度定义。
+    // 鍙栨秷瀹藉害瀹氫箟銆�
 #undef __VPF_WIDTH_NULL
 
 } // int vsprintf(char* buffer, const char* format, va_list args)
