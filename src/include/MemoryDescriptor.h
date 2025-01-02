@@ -73,7 +73,7 @@ private:
 public:
   // 删除掉这个变量： PageTable* m_UserPageTableArray;
   // 但是保证结构体大小不变
-  char m_PlaceHolder[sizeof(PageTable *)];
+  // char m_PlaceHolder[sizeof(PageTable *)];
 
   /* 以下数据都是线性地址 */
   unsigned long m_TextStartAddress; /* 代码段起始地址 */

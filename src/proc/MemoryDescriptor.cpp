@@ -187,8 +187,8 @@ void MemoryDescriptor::MapToPageTable() {
     pUserPageTable[1].m_Entrys[i].m_ReadWriter = 0; // 代码段只读
     pUserPageTable[1].m_Entrys[i].m_PageBaseAddress = (textAddress >> 12) + j;
   }
-  Diagnose::Write("Written text segment[%d]-[%d]\n", this->GetTextSize(),
-                  text_count);
+  // Diagnose::Write("Written text segment[%d]-[%d]\n", this->GetTextSize(),
+  // text_count);
   // NOTE: 第二部分，数据段, 只需关注PageTable1
   unsigned const data_count = this->GetDataSize() >> 12;
   // 计算的时候紧接着从上一次的位置开始, 但是偏移量从j=1开始,
@@ -201,8 +201,8 @@ void MemoryDescriptor::MapToPageTable() {
         (u.u_procp->p_addr >> 12) + j;
     MapTableAssert(j <= data_count);
   }
-  Diagnose::Write("Written data segment[%d]-[%d]\n", this->GetDataSize(),
-                  data_count);
+  // Diagnose::Write("Written data segment[%d]-[%d]\n", this->GetDataSize(),
+  // data_count);
   // NOTE: 最后一个项, 对应堆栈段
   unsigned const pos = PageTable::ENTRY_CNT_PER_PAGETABLE - 1;
   pUserPageTable[1].m_Entrys[pos].m_Present = 1;
