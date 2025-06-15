@@ -123,7 +123,7 @@ void main0(void)
 
 	//init page protection
 	machine.InitPageDirectory();
-	machine.EnablePageProtection();
+	// machine.EnablePageProtection();
 	/* 
 	 * InitPageDirectory()中将线性地址0-4M映射到物理内存
 	 * 0-4M是为保证此注释以下至本函数结尾的代码正确执行！

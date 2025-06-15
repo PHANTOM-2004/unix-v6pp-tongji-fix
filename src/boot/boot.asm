@@ -88,14 +88,6 @@ _startup:
 		mov es, ax
 		mov ss, ax
 
-    mov ax, 0x28
-		mov gs, ax
-		mov ah,0xc ;黑底红字
-		mov al, 'P'
-		mov [gs:80*2*24], ax
-
-    jmp $
-
 		mov	ecx, KERNEL_SIZE 	;cx = 扇区数KERNEL_SIZE，作为loop的次数
 		mov eax, 1				;LBA寻址模式下sector编号从0开始。  #0是引导扇区，#1扇区开始才是kernel的首扇区
 		mov ebx, 0x100000		;目标存放地址从1M处开始，每次loop递增512 bytes
@@ -239,15 +231,7 @@ gdt:
 		dw	0x0000		
 		dw	0x9200		
 		dw	0x40CF		
-
-    
-    ; 此处多增加一个显存段，用于屏幕输出测试
-    dw 0xFFFF ; limit(L15~0)=0xffff；
-    dw 0x8000 ; base(B15~0)=0x8000
-    dw 0x920B ; P=1 , 段存在内存；DPL=0 , 特权级；TYPE=0010 , 可读/写；B23~16 = 0x0B
-    dw 0x00CF ; B31~24 = 0x00；G=1 , 段限单位为 4KB；D/B=1 , 32bit；L19~16=0xf
-    ; GDT End
-		
+	
 gdtr:
 		dw $-gdt		;limit
 		dd gdt			;offset
